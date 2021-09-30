@@ -1,0 +1,36 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+      - name: Publish code coverage
+        uses: paambaati/codeclimate-action@v2.6.0
+        env:
+          CC_TEST_REPORTER_ID: b0e3ffa6def6506444f1d7c86adf70b27b1a4d1280e5aba5ba09abe3b7c23482
+          JACOCO_SOURCE_PATH: "${{github.workspace}}/src/main/java"
+        with:
+          coverageCommand: ls
+          coverageLocations: ${{github.workspace}}/target/site/jacoco/jacoco.xml:jacoco
